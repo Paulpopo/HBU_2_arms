@@ -1,8 +1,9 @@
 #include <Arduino.h>
 #include "robot_serial.h"
+#include "roubot_two_new_struct.h"
 
 int byte_num = 0;
-char received_data[21] = {0};
+char received_data[4*ENGINES_NUM+1] = {0};
 
 struct robot_serial
 {
@@ -32,23 +33,12 @@ int serial_get_ctl_cmd(char *ctl_data)
             break;
         }
 
-        // if(('+' == received_data_catch)
-        //     || ('-' == received_data_catch)
-        //     || ((received_data_catch >= '0') && (received_data_catch <= '9')))
-        // {
         received_data[byte_num] = received_data_catch;
         // Serial.print("byte_num:");
         // Serial.print(byte_num);
         // Serial.print(". received_byte:");
         // Serial.println(received_data[byte_num]);
         byte_num++;
-        // }
-        // else
-        // {
-        //     Serial.print("[ERROR]invalied received_byte:");
-        //     Serial.println(received_data_catch, HEX);
-        //     break;
-        // }
     }
 
     if(1 == received_end_sign)
@@ -78,7 +68,7 @@ int parse_ctl_data(int *ctl_cmd, int ctl_cmd_num)
     int ctl_data_sign_pos[ctl_cmd_num + 1] = {0};       //符号脚标号
     bool ctl_data_sign_status[ctl_cmd_num] = {0};       //符号极性，"1"为正，"0"为负
 
-    char ctl_data[21] = {0};                            //字符串
+    char ctl_data[4*ENGINES_NUM+1] = {0};               //字符串
 
     int ctl_cmd_cnt = -1;                               //符号脚标号的顺序号
 
@@ -139,23 +129,17 @@ int parse_ctl_data(int *ctl_cmd, int ctl_cmd_num)
             if(1 == ctl_data_sign_status[ctl_cmd_cnt])
             {
                 ctl_cmd[ctl_cmd_cnt] = ctl_cmd_abs;
-                // ctl_cmd[ctl_cmd_cnt] = (ctl_data[ctl_data_sign_pos[ctl_cmd_cnt+1] - 1] - 48)
-                //                         + (ctl_data[ctl_data_sign_pos[ctl_cmd_cnt+1] - 2] - 48) * 10
-                //                         + (ctl_data[ctl_data_sign_pos[ctl_cmd_cnt+1] - 3] - 48) * 100;
             }
             else
             {
                 ctl_cmd[ctl_cmd_cnt] = -ctl_cmd_abs;
-                // ctl_cmd[ctl_cmd_cnt] = -((ctl_data[ctl_data_sign_pos[ctl_cmd_cnt+1] - 1] - 48)
-                //                         + (ctl_data[ctl_data_sign_pos[ctl_cmd_cnt+1] - 2] - 48) * 10
-                //                         + (ctl_data[ctl_data_sign_pos[ctl_cmd_cnt+1] - 3] - 48) * 100);
             }
             ctl_cmd_abs = 0;
 
-            Serial.print("[parse_ctl_data]ctl_cmd_cnt: ");
-            Serial.print(ctl_cmd_cnt);
-            Serial.print(" ctl_cmd: ");
-            Serial.println(ctl_cmd[ctl_cmd_cnt]);
+            // Serial.print("[parse_ctl_data]ctl_cmd_cnt: ");
+            // Serial.print(ctl_cmd_cnt);
+            // Serial.print(" ctl_cmd: ");
+            // Serial.println(ctl_cmd[ctl_cmd_cnt]);
         }
         ret = ctl_cmd_cnt;
     }
@@ -165,7 +149,7 @@ int parse_ctl_data(int *ctl_cmd, int ctl_cmd_num)
 
 void robot_serial_init(void)
 {
-    robot_serial_ob.run_div = 19;               //运行间隔20ms，解析收到的控制数据，快了串口收发出错
+    robot_serial_ob.run_div = 20;               //运行间隔20ms，解析收到的控制数据，快了串口收发出错
     robot_serial_ob.run_cnt = 0;                //间隔计时
 }
 
@@ -175,14 +159,14 @@ int robot_serial_execute(int *ctl_cmd, int ctl_cmd_num)
 {
     int ret = 0;
 
-    if(robot_serial_ob.run_cnt <= robot_serial_ob.run_div)
+    if(robot_serial_ob.run_cnt < robot_serial_ob.run_div)
     {
         robot_serial_ob.run_cnt = 0;
         ret = parse_ctl_data(ctl_cmd, ctl_cmd_num);
         if (ret > 0)
         {
             Serial.print("[debug] robot_serial_execute: ctl_cmd: ");
-            for(int i = 0; i < 5; i++)
+            for(int i = 0; i < ENGINES_NUM; i++)
             {
                 Serial.print(ctl_cmd[i]);
                 Serial.print("   ");

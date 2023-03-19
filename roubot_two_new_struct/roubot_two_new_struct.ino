@@ -7,15 +7,13 @@
 #include "robot_PCA9685.h"
 #include "robot_serial.h"
 #include "robot_drv_eng.h"
+#include "roubot_two_new_struct.h"
 #include <Arduino.h>
 
-#define ENGINES_NUM 5
-
-
-int ctl_cmd[5] = {0};
+int ctl_cmd[ENGINES_NUM] = {90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 90, 90, 90, 90, 0, 0, 0, 0, 0, 0};
 
 void setup() {
-  int ctl_init_cmd[5] = {90, 0, 0, 0, 0};
+  int ctl_init_cmd[ENGINES_NUM] = {90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 90, 90, 90, 90, 0, 0, 0, 0, 0, 0};
   int ret;
 
   //串口通信初始化
@@ -26,11 +24,13 @@ void setup() {
   robot_serial_init();
   engine_drv_init(5);
 
-  ret = drv_engines(ctl_init_cmd, 5);
+  ret = drv_engines(ctl_init_cmd, ENGINES_NUM);
   if(ret != 0)
   {
     Serial.println("[ERROR] setup: init postion engines error.");
   }
+
+  Serial.println("[debug] setup: init finish.");
 }
 
 void loop() {
@@ -54,17 +54,13 @@ void loop() {
     Serial.println(ret);
   }
 
-
   // 电压检测
   // vol = current_GET(9,1,2);
 
   // 驱动：1、一直转动，直到顶到物体；2、一直转动，直到达到指定位置
   // test
-  // Servo_out(2, 1, 4 , ctl_cmd[0], 0);
+  // Servo_out(1, 1, 1, ctl_cmd[0], 0);
   // Serial.println("engine moved.");
 
-
-
-
-  delay(1);
+  delay(5);
 }

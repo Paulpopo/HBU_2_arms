@@ -5,6 +5,7 @@
 #include <Adafruit_PWMServoDriver.h>
 #include "robot_PCA9685.h"
 #include "robot_PCF8591.h"
+#include "roubot_two_new_struct.h"
 
 // PCA9685 IIC地址配置
 Adafruit_PWMServoDriver pca1 = Adafruit_PWMServoDriver(0x41);
@@ -31,10 +32,10 @@ Adafruit_PWMServoDriver pca2 = Adafruit_PWMServoDriver(0x42);
 */
 struct robot_run_t
 {
-  float angle[5];
+  float angle[ENGINES_NUM+1];
   int target_angle;
 
-  int gtas_prt[5];
+  int gtas_prt[ENGINES_NUM+1];
   unsigned char bs_prt;
 
 };
@@ -109,20 +110,28 @@ int change_run_status(int32_t angle, int vol)
 int execute_run(uint16_t pca_n, uint16_t num, int32_t angle, int runornot)
 {
   int pwmout;
+  int num_prt;
   Adafruit_PWMServoDriver pca;
   char pca_s[8] = {0};
   char pca1_s[8] = "pac1";
   char pca2_s[8] = "pac2";
 
+  // 因为两个芯片用的通道数相同，但是“是否打印”的标志位又不能相同，所以增加一个判断，
+  // 若是pca1则num_prt=num，若是pca2则num_prt=num+10
+  // 同时当前角度的顺序号也是与输入的顺序号不同的，所以也用num_prt
   if(1 == pca_n)
   {
     pca = pca1;
     strcpy(pca_s, pca1_s);
+
+    num_prt = num;
   }
   else if (2 == pca_n)
   {
     pca = pca2;
     strcpy(pca_s, pca2_s);
+
+    num_prt = num + 12;
   }
   else
   {
@@ -133,7 +142,8 @@ int execute_run(uint16_t pca_n, uint16_t num, int32_t angle, int runornot)
 
   if((num > 11) || (num < 0))
   {
-    Serial.println("[ERROR]execute_run: invalied num.");
+    Serial.print("[ERROR]execute_run: invalied num: ");
+    Serial.println(num);
     return -1;
   }
 
@@ -143,41 +153,34 @@ int execute_run(uint16_t pca_n, uint16_t num, int32_t angle, int runornot)
     return -1;
   }
 
-  // Serial.print("---------------");
-  // Serial.println(angle);
+  // Serial.print(". No. ");
+  // Serial.print(num_prt);
+  // Serial.print(" gtas_prt :");
+  // Serial.println(robot_run.gtas_prt[num_prt]);
+
 
   // if((int)robot_run.angle[num] != angle)
   // {
     // robot_run.angle导致控制多个电机时当前角度被多个目标角度控制，从而导致电机之前冲突
     if(RUN == runornot)
     {
-      pwmout=(robot_run.angle[num]/180*2+0.5)*4096/20;
+      pwmout=(robot_run.angle[num_prt]/180*2+0.5)*4096/20;
       pca.setPWM(num,0,pwmout);
 
-      // Serial.print("pwmout: ");
-      // Serial.println(pwmout);
-
-      // Serial.print("[debug]current angle No.");
-      // Serial.print(num);
-      // Serial.print(" : ");
-      // Serial.println(robot_run.angle[num]);
-      // Serial.print("  target angle : ");
-      // Serial.println(angle);
-
       //根据当前角度值与目标角度值判断电机运动方向
-      if((int)robot_run.angle[num] > angle)
+      if((int)robot_run.angle[num_prt] > angle)
       {
-        robot_run.angle[num] -= 1;
-        robot_run.gtas_prt[num] = 0;
+        robot_run.angle[num_prt] -= 1;
+        robot_run.gtas_prt[num_prt] = 0;
       }
-      else if((int)robot_run.angle[num] < angle)
+      else if((int)robot_run.angle[num_prt] < angle)
       {
-        robot_run.angle[num] += 1;
-        robot_run.gtas_prt[num] = 0;
+        robot_run.angle[num_prt] += 1;
+        robot_run.gtas_prt[num_prt] = 0;
       }
       else
       {
-        if(0 == robot_run.gtas_prt[num])
+        if(0 == robot_run.gtas_prt[num_prt])
         {
           Serial.print("[debug]execute_run: pca: ");
           Serial.print(pca_s);
@@ -185,7 +188,7 @@ int execute_run(uint16_t pca_n, uint16_t num, int32_t angle, int runornot)
           Serial.print(num);
           Serial.print(" get target angel stopped ");
           Serial.println(angle);
-          robot_run.gtas_prt[num] = 1;
+          robot_run.gtas_prt[num_prt] = 1;
         }
       }
 
