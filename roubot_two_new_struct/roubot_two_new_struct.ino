@@ -10,10 +10,11 @@
 #include "roubot_two_new_struct.h"
 #include <Arduino.h>
 
-int ctl_cmd[ENGINES_NUM] = {90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 90, 90, 90, 90, 0, 0, 0, 0, 0, 0};
+int ctl_cmd[ENGINES_NUM] = {0};
 
 void setup() {
-  int ctl_init_cmd[ENGINES_NUM] = {90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 90, 90, 90, 90, 0, 0, 0, 0, 0, 0};
+  int ctl_init_cmd[ENGINES_NUM] = {0};
+  // int ctl_init_cmd[ENGINES_NUM] = {90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 90, 90, 90, 90, 0, 0, 0, 0, 0, 0};
   int ret;
 
   //串口通信初始化
