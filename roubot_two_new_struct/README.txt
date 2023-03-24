@@ -17,3 +17,7 @@ author：yyp
 ver0.2.1
 author：yyp
 功能：修改初始化数据错误bug
+
+ver0.2.2
+author：yyp
+功能：调试中发现模块分频未起作用，修改此bug

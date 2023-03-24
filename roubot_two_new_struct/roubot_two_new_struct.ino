@@ -14,7 +14,6 @@ int ctl_cmd[ENGINES_NUM] = {0};
 
 void setup() {
   int ctl_init_cmd[ENGINES_NUM] = {0};
-  // int ctl_init_cmd[ENGINES_NUM] = {90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 90, 90, 90, 90, 0, 0, 0, 0, 0, 0};
   int ret;
 
   //串口通信初始化
@@ -54,14 +53,6 @@ void loop() {
     Serial.print("[main] ERROR: drive engines error.ret : ");
     Serial.println(ret);
   }
-
-  // 电压检测
-  // vol = current_GET(9,1,2);
-
-  // 驱动：1、一直转动，直到顶到物体；2、一直转动，直到达到指定位置
-  // test
-  // Servo_out(1, 1, 1, ctl_cmd[0], 0);
-  // Serial.println("engine moved.");
 
   delay(5);
 }

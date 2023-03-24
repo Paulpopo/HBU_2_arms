@@ -149,7 +149,7 @@ int parse_ctl_data(int *ctl_cmd, int ctl_cmd_num)
 
 void robot_serial_init(void)
 {
-    robot_serial_ob.run_div = 20;               //运行间隔20ms，解析收到的控制数据，快了串口收发出错
+    robot_serial_ob.run_div = 4;               //运行间隔20ms，解析收到的控制数据，快了串口收发出错
     robot_serial_ob.run_cnt = 0;                //间隔计时
 }
 
@@ -159,7 +159,7 @@ int robot_serial_execute(int *ctl_cmd, int ctl_cmd_num)
 {
     int ret = 0;
 
-    if(robot_serial_ob.run_cnt < robot_serial_ob.run_div)
+    if(robot_serial_ob.run_cnt >= robot_serial_ob.run_div)
     {
         robot_serial_ob.run_cnt = 0;
         ret = parse_ctl_data(ctl_cmd, ctl_cmd_num);
